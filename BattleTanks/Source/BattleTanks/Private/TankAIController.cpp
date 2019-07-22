@@ -8,15 +8,16 @@
 void ATankAIController::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
-	APawn* ControlledTank = GetControlledTank();
+void ATankAIController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 
-	if (ControlledTank)
-		UE_LOG(LogTemp, Warning, TEXT("Possess: %s"), *ControlledTank->GetName());
+	if (!GetControlledTank() && !GetPlayerTank()) return;
 
-	APawn* PlayerTank = GetPlayerTank();
-	if (PlayerTank)
-		UE_LOG(LogTemp, Warning, TEXT("Found Player Tank: %s"), *PlayerTank->GetName());
+	FVector PlayerLocation = GetPlayerTank()->GetActorLocation();
+	GetControlledTank()->AimAt(PlayerLocation);
 }
 
 ATank * ATankAIController::GetControlledTank() const
