@@ -18,12 +18,13 @@ public:
 
 	UTankBarrel();
 
-	void Elevate(float ElevateAmount);
+	// -1 is max downward movement, +1 max upward movement
+	void Elevate(float RelativeSpeed);
 
 private:
 
 	UPROPERTY(EditAnywhere, Category = "Setup")
-	float MaxDegreePerSecond = 20.0f;
+	float MaxDegreePerSecond = 3.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Setup")
 	float MaxElevation = 30.0f; // Pitch

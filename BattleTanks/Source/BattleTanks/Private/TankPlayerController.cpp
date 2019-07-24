@@ -3,6 +3,7 @@
 
 #include "TankPlayerController.h"
 #include "Engine/World.h"
+#include "Tank.h"
 
 
 void ATankPlayerController::BeginPlay()
@@ -48,8 +49,7 @@ bool ATankPlayerController::GetSightRayHitLocation(FVector & OutHitLocation) con
 	{
 		if (GetLookVectorHitLocation(LookDirection, OutHitLocation))
 		{
-
-			//UE_LOG(LogTemp, Warning, TEXT("OutHitLocation: %s"), *OutHitLocation.ToString())
+			/*UE_LOG(LogTemp, Warning, TEXT("OutHitLocation: %s"), *OutHitLocation.ToString())*/
 		}
 	}
 
