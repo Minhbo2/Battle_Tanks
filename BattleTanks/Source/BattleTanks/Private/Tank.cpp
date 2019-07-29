@@ -5,6 +5,7 @@
 #include "TankAimingComponent.h"
 #include "TankBarrel.h"
 #include "TankTurret.h"
+#include "Projectile.h"
 
 // Sets default values
 ATank::ATank()
@@ -23,6 +24,18 @@ void ATank::AimAt(FVector AimLocation)
 void ATank::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * TurretToSet)
 {
 	TankAimingComponent->SetTankComponentPart(BarrelToSet, TurretToSet);
+	Barrel = BarrelToSet;
+}
+
+void ATank::Firing()
+{
+
+	if (!Barrel) return;
+
+	const FVector Location = Barrel->GetSocketLocation(FName("Socket_Projectile"));
+	const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
+	GetWorld()->SpawnActor<AProjectile>(ProjectileBP, Location, Rotation);
+	//UE_LOG(LogTemp, Warning, TEXT("Socket rotation: %s"), *Rotation.ToString());
 }
 
 // Called to bind functionality to input
