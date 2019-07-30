@@ -6,6 +6,8 @@
 #include "TankBarrel.h"
 #include "TankTurret.h"
 #include "Projectile.h"
+#include "EngineUtils.h"
+#include "ProjectilePool.h"
 
 // Sets default values
 ATank::ATank()
@@ -30,11 +32,17 @@ void ATank::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * Turret
 void ATank::Firing()
 {
 
-	if (!Barrel) return;
+	if (!Barrel && !ProjectilePool) return;
 
-	const FVector Location = Barrel->GetSocketLocation(FName("Socket_Projectile"));
+	const FVector Location  = Barrel->GetSocketLocation(FName("Socket_Projectile"));
 	const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
-	GetWorld()->SpawnActor<AProjectile>(ProjectileBP, Location, Rotation);
+	auto Projectile         = ProjectilePool->CheckOutProjectile();
+	if (Projectile)
+	{
+		Projectile->SetActorLocation(Location);
+		Projectile->SetActorRotation(Rotation);
+		Projectile->LaunchProjectile(LaunchSpeed);
+	}
 	//UE_LOG(LogTemp, Warning, TEXT("Socket rotation: %s"), *Rotation.ToString());
 }
 
@@ -42,6 +50,22 @@ void ATank::Firing()
 void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
 
+void ATank::FindAndSetPool()
+{
+	TActorIterator<AProjectilePool> PoolIterator(GetWorld());
+	for (PoolIterator; PoolIterator; ++PoolIterator)
+	{
+		AProjectilePool * Pool = *PoolIterator;
+		if (!ProjectilePool)
+		{
+			ProjectilePool = Pool;
+			continue;
+		}
+
+		// destroy all other
+		Pool->Destroy();
+	}
 }
 

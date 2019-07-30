@@ -10,6 +10,7 @@ class UTankBarrel;
 class UTankTurret;
 class UTankAimingComponent;
 class AProjectile;
+class AProjectilePool;
 
 UCLASS()
 class BATTLETANKS_API ATank : public APawn
@@ -39,6 +40,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Setup)
 	TSubclassOf<AProjectile> ProjectileBP;
+	
+	AProjectilePool* ProjectilePool = nullptr;
 
 	// local barrel ref for spawning
 	UTankBarrel* Barrel = nullptr;
@@ -46,4 +49,6 @@ private:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable, Category = Setup)
+	void FindAndSetPool();
 };
