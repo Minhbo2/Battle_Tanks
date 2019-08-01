@@ -8,6 +8,8 @@
 #include "Projectile.h"
 #include "EngineUtils.h"
 #include "ProjectilePool.h"
+#include "TankTrack.h"
+#include "TankMovementComponent.h"
 
 // Sets default values
 ATank::ATank()
@@ -16,6 +18,7 @@ ATank::ATank()
 	PrimaryActorTick.bCanEverTick = false;
 
 	TankAimingComponent = CreateDefaultSubobject<UTankAimingComponent>(FName("Aiming Component"));
+	TankMovementComponent = CreateDefaultSubobject<UTankMovementComponent>(FName("TankMovement"));
 }
 
 void ATank::AimAt(FVector AimLocation)
@@ -31,18 +34,23 @@ void ATank::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * Turret
 
 void ATank::Firing()
 {
+	bool bReloaded = (FPlatformTime::Seconds() - LastTimeFired) > ReloadTimeInSeconds;
 
-	if (!Barrel && !ProjectilePool) return;
-
-	const FVector Location  = Barrel->GetSocketLocation(FName("Socket_Projectile"));
-	const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
-	auto Projectile         = ProjectilePool->CheckOutProjectile();
-	if (Projectile)
+	if (Barrel && ProjectilePool && bReloaded)
 	{
-		Projectile->SetActorLocation(Location);
-		Projectile->SetActorRotation(Rotation);
-		Projectile->LaunchProjectile(LaunchSpeed);
+		const FVector Location  = Barrel->GetSocketLocation(FName("Socket_Projectile"));
+		const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
+		auto Projectile         = ProjectilePool->CheckOutProjectile();
+
+		if (Projectile)
+		{
+			Projectile->SetActorLocation(Location);
+			Projectile->SetActorRotation(Rotation);
+			Projectile->LaunchProjectile(LaunchSpeed);
+			LastTimeFired = FPlatformTime::Seconds();
+		}
 	}
+
 	//UE_LOG(LogTemp, Warning, TEXT("Socket rotation: %s"), *Rotation.ToString());
 }
 
@@ -52,20 +60,7 @@ void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void ATank::FindAndSetPool()
+void ATank::CreateProjectilePool()
 {
-	TActorIterator<AProjectilePool> PoolIterator(GetWorld());
-	for (PoolIterator; PoolIterator; ++PoolIterator)
-	{
-		AProjectilePool * Pool = *PoolIterator;
-		if (!ProjectilePool)
-		{
-			ProjectilePool = Pool;
-			continue;
-		}
-
-		// destroy all other
-		Pool->Destroy();
-	}
+	ProjectilePool = GetWorld()->SpawnActor<AProjectilePool>(ProjectilePoolBP, FVector(0), FRotator(0));
 }
-
