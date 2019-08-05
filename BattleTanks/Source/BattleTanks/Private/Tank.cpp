@@ -9,7 +9,6 @@
 #include "EngineUtils.h"
 #include "ProjectilePool.h"
 #include "TankTrack.h"
-#include "TankMovementComponent.h"
 
 // Sets default values
 ATank::ATank()
@@ -18,7 +17,6 @@ ATank::ATank()
 	PrimaryActorTick.bCanEverTick = false;
 
 	TankAimingComponent = CreateDefaultSubobject<UTankAimingComponent>(FName("Aiming Component"));
-	TankMovementComponent = CreateDefaultSubobject<UTankMovementComponent>(FName("TankMovement"));
 }
 
 void ATank::AimAt(FVector AimLocation)

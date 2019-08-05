@@ -25,7 +25,7 @@ public:
 	10ms-2 (1g) acceleration* 
 	400000 Newtons in driving force */
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
-	float TrackMaxForce = 400000;
+	float TrackMaxForce = 40000000;
 
 	UFUNCTION(BlueprintCallable, Category = Input)
 	void SetThrottle(float Throttle);

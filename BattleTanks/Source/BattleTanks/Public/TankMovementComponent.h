@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+class UTankTrack;
+
 UCLASS(meta = (BlueprintSpawnableComponent))
 class BATTLETANKS_API UTankMovementComponent : public UNavMovementComponent
 {
@@ -18,6 +21,21 @@ public:
 
 	UTankMovementComponent();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = Input)
 	void IntendMoveForward(float Throw);
+
+	UFUNCTION(BlueprintCallable, Category = Input)
+	void IntendRightTurn(float Throw);
+
+	UFUNCTION(BlueprintCallable, Category = Input)
+	void IntendLeftTurn(float Throw);
+
+	UFUNCTION(BlueprintCallable, Category = Setup)
+	void Initialize(UTankTrack * Left, UTankTrack * Right);
+
+private: 
+
+	UTankTrack* LeftTrack = nullptr;
+	
+	UTankTrack* RightTrack = nullptr;
 };
