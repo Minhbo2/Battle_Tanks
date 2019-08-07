@@ -9,12 +9,13 @@ UTankTrack::UTankTrack()
 {
 	ConstructorHelpers::FObjectFinder<UStaticMesh> TrackStaticMesh(TEXT("/Game/Tank_StaticMesh/tank_fbx_Track"));
 	ConstructorHelpers::FObjectFinder<UPhysicalMaterial> PhysMaterial(TEXT("/Game/Material/Track"));
-	if (!TrackStaticMesh.Object || !PhysMaterial.Object) return;
+	if (TrackStaticMesh.Object || PhysMaterial.Object)
+	{
+		SetStaticMesh(TrackStaticMesh.Object);
+		SetRelativeLocation(FVector(0));
 
-	SetStaticMesh(TrackStaticMesh.Object);
-	SetRelativeLocation(FVector(0));
-
-	SetPhysMaterialOverride(PhysMaterial.Object);
+		//SetPhysMaterialOverride(PhysMaterial.Object);
+	}
 }
 
 void UTankTrack::SetThrottle(float Throttle)
