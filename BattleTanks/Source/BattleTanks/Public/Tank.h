@@ -11,7 +11,6 @@ class UTankTurret;
 class UTankAimingComponent;
 class AProjectile;
 class AProjectilePool;
-class UTankTrack;
 
 UCLASS()
 class BATTLETANKS_API ATank : public APawn
@@ -25,13 +24,14 @@ public:
 	void AimAt(FVector AimLocation);
 
 	UFUNCTION(BlueprintCallable, Category = Setup)
-	void SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * TurretToSet);
+	void SetTankComponentPart(UTankBarrel * BarrelToSet, UTankAimingComponent * AimingComponent);
 
 	UFUNCTION(BlueprintCallable, Category = Firing)
 	void Firing();
 
 protected:
 
+	UPROPERTY(BlueprintReadOnly)
 	UTankAimingComponent * TankAimingComponent = nullptr;
 
 private:	
@@ -54,13 +54,6 @@ private:
 
 	// local barrel ref for spawning
 	UTankBarrel* Barrel = nullptr;
-
-	UTankTrack* LeftTrack;
-
-	UTankTrack* RightTrack;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable, Category = Setup)
 	void CreateProjectilePool();

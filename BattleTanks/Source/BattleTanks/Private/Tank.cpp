@@ -8,15 +8,12 @@
 #include "Projectile.h"
 #include "EngineUtils.h"
 #include "ProjectilePool.h"
-#include "TankTrack.h"
 
 // Sets default values
 ATank::ATank()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
-	TankAimingComponent = CreateDefaultSubobject<UTankAimingComponent>(FName("Aiming Component"));
 }
 
 void ATank::AimAt(FVector AimLocation)
@@ -24,10 +21,12 @@ void ATank::AimAt(FVector AimLocation)
 	TankAimingComponent->AimAt(AimLocation, LaunchSpeed);
 }
 
-void ATank::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * TurretToSet)
+void ATank::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankAimingComponent * AimingComponent)
 {
-	TankAimingComponent->SetTankComponentPart(BarrelToSet, TurretToSet);
-	Barrel = BarrelToSet;
+	if (!BarrelToSet || !AimingComponent) return;
+
+	TankAimingComponent = AimingComponent;
+	Barrel              = BarrelToSet;
 }
 
 void ATank::Firing()
@@ -50,12 +49,6 @@ void ATank::Firing()
 	}
 
 	//UE_LOG(LogTemp, Warning, TEXT("Socket rotation: %s"), *Rotation.ToString());
-}
-
-// Called to bind functionality to input
-void ATank::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void ATank::CreateProjectilePool()
