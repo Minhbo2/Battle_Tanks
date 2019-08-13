@@ -5,6 +5,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "TankBarrel.h"
 #include "TankTurret.h"
+#include "EngineUtils.h"
+#include "ProjectilePool.h"
+#include "Projectile.h"
 
 // Sets default values for this component's properties
 UTankAimingComponent::UTankAimingComponent()
@@ -16,13 +19,20 @@ UTankAimingComponent::UTankAimingComponent()
 	// ...
 }
 
+void UTankAimingComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	CreateProjectilePool();
+}
+
 void UTankAimingComponent::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * TurretToSet)
 {
 	Barrel = BarrelToSet;
 	Turret = TurretToSet;
 }
 
-void UTankAimingComponent::AimAt(FVector WorldSpaceAim, float LaunchSpeed)
+void UTankAimingComponent::AimAt(FVector WorldSpaceAim)
 {
 	if (!Barrel && !Turret) return;
 
@@ -53,8 +63,36 @@ void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
 {
 	// calculate the difference between current barrel rotation and AimDirection
 	FRotator BarrelRotator = Barrel->GetForwardVector().Rotation();
-	FRotator AimAsRotator = AimDirection.Rotation();
-	FRotator DeltaRotator = AimAsRotator - BarrelRotator;
+	FRotator AimAsRotator  = AimDirection.Rotation();
+	FRotator DeltaRotator  = AimAsRotator - BarrelRotator;
 	Barrel->Elevate(DeltaRotator.Pitch); // -1 is max downward movement, +1 max upward movement
 	Turret->Rotate(DeltaRotator.Yaw);
+}
+
+
+void UTankAimingComponent::Firing()
+{
+	bool bReloaded = (FPlatformTime::Seconds() - LastTimeFired) > ReloadTimeInSeconds;
+
+	if (!ensure(Barrel) || !ensure(ProjectilePool)) return;
+
+	if (bReloaded)
+	{
+		const FVector Location  = Barrel->GetSocketLocation(FName("Socket_Projectile"));
+		const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
+		auto Projectile         = ProjectilePool->CheckOutProjectile();
+
+		if (Projectile)
+		{
+			Projectile->SetActorLocation(Location);
+			Projectile->SetActorRotation(Rotation);
+			Projectile->LaunchProjectile(LaunchSpeed);
+			LastTimeFired = FPlatformTime::Seconds();
+		}
+	}
+}
+
+void UTankAimingComponent::CreateProjectilePool()
+{
+	ProjectilePool = GetWorld()->SpawnActor<AProjectilePool>(ProjectilePoolBP, FVector(0), FRotator(0));
 }

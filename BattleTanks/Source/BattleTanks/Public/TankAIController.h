@@ -6,8 +6,6 @@
 #include "AIController.h"
 #include "TankAIController.generated.h"
 
-class ATank;
-
 UCLASS()
 class BATTLETANKS_API ATankAIController : public AAIController
 {
@@ -17,8 +15,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
 	float AcceptanceRadius = 3000;
-
-	void BeginPlay() override;
 
 	void Tick(float DeltaTime) override;
 };
