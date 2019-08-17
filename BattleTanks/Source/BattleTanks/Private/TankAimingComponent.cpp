@@ -24,6 +24,20 @@ void UTankAimingComponent::BeginPlay()
 	Super::BeginPlay();
 
 	CreateProjectilePool();
+
+	LastTimeFired = FPlatformTime::Seconds();
+}
+
+void UTankAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if ((FPlatformTime::Seconds() - LastTimeFired) < ReloadTimeInSeconds)
+		FiringStatus = EFiringStatus::Reloading;
+	else if(IsBarrelMoving())
+		FiringStatus = EFiringStatus::Aiming;
+	else
+		FiringStatus = EFiringStatus::Locked;
 }
 
 void UTankAimingComponent::SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * TurretToSet)
@@ -32,7 +46,7 @@ void UTankAimingComponent::SetTankComponentPart(UTankBarrel * BarrelToSet, UTank
 	Turret = TurretToSet;
 }
 
-void UTankAimingComponent::AimAt(FVector WorldSpaceAim)
+void UTankAimingComponent::AimAt(FVector HitLocation)
 {
 	if (!Barrel && !Turret) return;
 
@@ -43,7 +57,7 @@ void UTankAimingComponent::AimAt(FVector WorldSpaceAim)
 		this, // world context object of where this method is originate from
 		OutLaunchVelocity, // reference to a FVector LaunchVelocity as a Out parameter
 		StartLocation, // start location
-		WorldSpaceAim, // end location, where the HitLocation projected Ray hit
+		HitLocation, // end location, where the HitLocation projected Ray hit
 		LaunchSpeed, // speed of which to launch the projectile
 		false, // using high arch
 		0, // collision radius 
@@ -54,8 +68,8 @@ void UTankAimingComponent::AimAt(FVector WorldSpaceAim)
 	// Calculate launch velocity
 	if(bHaveAimSolution)
 	{
-		FVector AimDirection = OutLaunchVelocity.GetSafeNormal();
-		MoveBarrelTowards(AimDirection);
+		this->AimDirection = OutLaunchVelocity.GetSafeNormal();
+		MoveBarrelTowards(this->AimDirection);
 	}
 }
 
@@ -63,20 +77,21 @@ void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
 {
 	// calculate the difference between current barrel rotation and AimDirection
 	FRotator BarrelRotator = Barrel->GetForwardVector().Rotation();
-	FRotator AimAsRotator  = AimDirection.Rotation();
-	FRotator DeltaRotator  = AimAsRotator - BarrelRotator;
+	FRotator AimAsRotator = AimDirection.Rotation();
+	FRotator DeltaRotator = AimAsRotator - BarrelRotator;
 	Barrel->Elevate(DeltaRotator.Pitch); // -1 is max downward movement, +1 max upward movement
-	Turret->Rotate(DeltaRotator.Yaw);
-}
 
+	if(FMath::Abs(DeltaRotator.Yaw) < 180)
+		Turret->Rotate(DeltaRotator.Yaw);
+	else
+		Turret->Rotate(-DeltaRotator.Yaw);
+}
 
 void UTankAimingComponent::Firing()
 {
-	bool bReloaded = (FPlatformTime::Seconds() - LastTimeFired) > ReloadTimeInSeconds;
+	if (!ensure(Barrel || ProjectilePool)) return;
 
-	if (!ensure(Barrel) || !ensure(ProjectilePool)) return;
-
-	if (bReloaded)
+	if (FiringStatus != EFiringStatus::Reloading)
 	{
 		const FVector Location  = Barrel->GetSocketLocation(FName("Socket_Projectile"));
 		const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
@@ -95,4 +110,9 @@ void UTankAimingComponent::Firing()
 void UTankAimingComponent::CreateProjectilePool()
 {
 	ProjectilePool = GetWorld()->SpawnActor<AProjectilePool>(ProjectilePoolBP, FVector(0), FRotator(0));
+}
+
+bool UTankAimingComponent::IsBarrelMoving()
+{
+	return !Barrel->GetForwardVector().Equals(AimDirection, 0.01f);
 }

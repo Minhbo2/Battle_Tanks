@@ -28,7 +28,7 @@ public:
 	// Sets default values for this component's properties
 	UTankAimingComponent();
 
-	void AimAt(FVector WorldSpaceAim);
+	void AimAt(FVector HitLocation);
 
 	UFUNCTION(BlueprintCallable, Category = Setup)
 	void SetTankComponentPart(UTankBarrel * BarrelToSet, UTankTurret * TurretToSet);
@@ -39,9 +39,11 @@ public:
 protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = State)
-	EFiringStatus FiringStatus = EFiringStatus::Aiming;
+	EFiringStatus FiringStatus = EFiringStatus::Reloading;
 
 	virtual void BeginPlay() override;
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
 
 private:	
 
@@ -52,6 +54,8 @@ private:
 	float ReloadTimeInSeconds = 3.0f;
 
 	float LastTimeFired = 0.0f;
+
+	FVector AimDirection;
 
 	// specify in tank BP, selecting aiming comp
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
@@ -71,4 +75,6 @@ private:
 
 	UFUNCTION(BlueprintCallable, Category = Setup)
 	void CreateProjectilePool();
+
+	bool IsBarrelMoving();
 };
