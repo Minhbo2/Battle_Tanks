@@ -8,7 +8,7 @@ void ATankAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	auto PlayerTank = GetWorld()->GetFirstPlayerController()->GetPawn();
+	auto PlayerTank     = GetWorld()->GetFirstPlayerController()->GetPawn();
 	auto ControlledTank = GetPawn();
 
 	if (ensure(ControlledTank && PlayerTank)) 
@@ -16,8 +16,10 @@ void ATankAIController::Tick(float DeltaTime)
 		auto AimingComponentRef = GetPawn()->FindComponentByClass<UTankAimingComponent>();
 		FVector PlayerLocation = PlayerTank->GetActorLocation();
 		AimingComponentRef->AimAt(PlayerLocation);
-		AimingComponentRef->Firing();
 		MoveToActor(PlayerTank, AcceptanceRadius);
+
+		if(AimingComponentRef->GetFiringState() == EFiringStatus::Locked)
+			AimingComponentRef->Firing();
 	}
 
 }

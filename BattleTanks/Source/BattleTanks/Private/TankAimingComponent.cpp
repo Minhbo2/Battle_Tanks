@@ -8,6 +8,7 @@
 #include "EngineUtils.h"
 #include "ProjectilePool.h"
 #include "Projectile.h"
+#include "UObject/ConstructorHelpers.h"
 
 // Sets default values for this component's properties
 UTankAimingComponent::UTankAimingComponent()
@@ -16,7 +17,8 @@ UTankAimingComponent::UTankAimingComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	ConstructorHelpers::FClassFinder<AProjectilePool> ProjPoolClass(TEXT("/Game/Blueprint/ProjectilePool_BP"));
+	ProjectilePoolBP = ProjPoolClass.Class;
 }
 
 void UTankAimingComponent::BeginPlay()
@@ -25,16 +27,19 @@ void UTankAimingComponent::BeginPlay()
 
 	CreateProjectilePool();
 
-	LastTimeFired = FPlatformTime::Seconds();
+	LastTimeFired    = FPlatformTime::Seconds();
+	CurrentAmmoCount = MaxAmmoCount;
 }
 
 void UTankAimingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction * ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if ((FPlatformTime::Seconds() - LastTimeFired) < ReloadTimeInSeconds)
+	if (GetCurrentAmmoCount() < 1)
+		FiringStatus = EFiringStatus::OutOfAmmo;
+	else if ((FPlatformTime::Seconds() - LastTimeFired) < ReloadTimeInSeconds)
 		FiringStatus = EFiringStatus::Reloading;
-	else if(IsBarrelMoving())
+	else if (IsBarrelMoving())
 		FiringStatus = EFiringStatus::Aiming;
 	else
 		FiringStatus = EFiringStatus::Locked;
@@ -81,6 +86,7 @@ void UTankAimingComponent::MoveBarrelTowards(FVector AimDirection)
 	FRotator DeltaRotator = AimAsRotator - BarrelRotator;
 	Barrel->Elevate(DeltaRotator.Pitch); // -1 is max downward movement, +1 max upward movement
 
+	// avoiding going the long way, take the shortest route
 	if(FMath::Abs(DeltaRotator.Yaw) < 180)
 		Turret->Rotate(DeltaRotator.Yaw);
 	else
@@ -97,14 +103,20 @@ void UTankAimingComponent::Firing()
 		const FRotator Rotation = Barrel->GetSocketRotation("Socket_Projectile");
 		auto Projectile         = ProjectilePool->CheckOutProjectile();
 
-		if (Projectile)
+		if (Projectile && GetCurrentAmmoCount() > 0)
 		{
 			Projectile->SetActorLocation(Location);
 			Projectile->SetActorRotation(Rotation);
 			Projectile->LaunchProjectile(LaunchSpeed);
 			LastTimeFired = FPlatformTime::Seconds();
+			--CurrentAmmoCount;
 		}
 	}
+}
+
+EFiringStatus UTankAimingComponent::GetFiringState() const
+{
+	return FiringStatus;
 }
 
 void UTankAimingComponent::CreateProjectilePool()

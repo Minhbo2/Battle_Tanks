@@ -11,12 +11,12 @@ enum class EFiringStatus : uint8
 {
 	Reloading,
 	Aiming,
-	Locked
+	Locked,
+	OutOfAmmo
 };
 
 class UTankBarrel;
 class UTankTurret;
-class AProjectile;
 class AProjectilePool;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -35,6 +35,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Firing)
 	void Firing();
+
+	UFUNCTION(BlueprintCallable, Category = Firing)
+	int32 GetCurrentAmmoCount() const { return CurrentAmmoCount; }
+
+	EFiringStatus GetFiringState() const;
 
 protected:
 
@@ -57,9 +62,10 @@ private:
 
 	FVector AimDirection;
 
-	// specify in tank BP, selecting aiming comp
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
-	TSubclassOf<AProjectile> ProjectileBP;
+	int32 MaxAmmoCount = 2;
+
+	int32 CurrentAmmoCount;
 
 	// specify in tank BP, selecting aiming comp
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
