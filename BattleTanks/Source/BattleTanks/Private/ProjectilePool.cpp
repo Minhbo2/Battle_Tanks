@@ -22,15 +22,11 @@ AProjectile * AProjectilePool::CheckOutProjectile()
 {
 	if (GetCurrentPoolAmount() < 1) return nullptr; //TODO: expand pool if no projectile is available
 	auto Projectile = Pool.Pop();
-	Projectile->SetActorHiddenInGame(false);
-	Projectile->SetActorEnableCollision(true);
 	return Projectile;
 }
 
 void AProjectilePool::ReturnProjectileToPool(AProjectile * Projectile)
 {
-	Projectile->SetActorHiddenInGame(true);
-	Projectile->SetActorEnableCollision(false);
 	Pool.Push(Projectile);
 }
 
@@ -42,7 +38,6 @@ void AProjectilePool::BeginPlay()
 	if (!Projectile) return;
 
 	SpawnProjectiles(MaxPoolAmount);
-	//UE_LOG(LogTemp, Warning, TEXT("Pool Amount: %d"), GetCurrentPoolAmount());
 }
 
 void AProjectilePool::SpawnProjectiles(int32 PoolAmount)
@@ -61,8 +56,6 @@ void AProjectilePool::SpawnProjectiles(int32 PoolAmount)
 			SpawnParams);
 
 		if (!NewProjectile) break;
-		NewProjectile->SetActorHiddenInGame(true);
-		NewProjectile->SetActorEnableCollision(false);
 		Pool.Add(NewProjectile);
 	}
 }
