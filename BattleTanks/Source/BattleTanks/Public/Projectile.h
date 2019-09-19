@@ -9,6 +9,7 @@
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
 class UParticleSystemComponent;
+class URadialForceComponent;
 
 UCLASS()
 class BATTLETANKS_API AProjectile : public AActor
@@ -34,6 +35,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = Component)
 	UParticleSystemComponent * ImpactBlast;
+
+	UPROPERTY(VisibleAnywhere, Category = Component)
+	URadialForceComponent* ImpulseForce;
+
+	UPROPERTY(EditDefaultsOnly, Category = Damage)
+	float ProjectileDamage;
+
+	/*UPROPERTY(VisibleAnywhere, Category = Setup)
+	float DestroyDelay;*/
 
 	virtual void BeginPlay() override;
 
