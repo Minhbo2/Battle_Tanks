@@ -16,9 +16,15 @@ float ATank::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, ACo
 
 	int32 DamagePoints = FPlatformMath::RoundToInt(DamageAmount);
 	int32 DamageToApply = FMath::Clamp(DamagePoints, 0, CurrentHealth);
+	CurrentHealth -= DamageToApply;
 
-	if (CurrentHealth > 0)
-		CurrentHealth -= DamageToApply;
+	if (CurrentHealth <= 0)
+		OnDeath.Broadcast();
 
 	return DamageToApply;
+}
+
+float ATank::GetHealthPercentage()
+{
+	return (float)CurrentHealth / (float)StartingHealth;
 }

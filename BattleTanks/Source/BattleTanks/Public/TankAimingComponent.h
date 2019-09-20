@@ -62,8 +62,8 @@ private:
 
 	FVector AimDirection;
 
-	UPROPERTY(EditDefaultsOnly, Category = Setup)
-	int32 MaxAmmoCount = 2;
+	UPROPERTY(EditAnywhere, Category = Setup)
+	int32 MaxAmmoCount = 10;
 
 	int32 CurrentAmmoCount;
 

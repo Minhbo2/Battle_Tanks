@@ -3,6 +3,18 @@
 
 #include "TankAIController.h"
 #include "TankAimingComponent.h"
+#include "Tank.h"
+
+// Subscribe to OnDeath delegate only when we for sure to have a possessed tank
+void ATankAIController::SetPawn(APawn* InPawn)
+{
+	Super::SetPawn(InPawn);
+
+	auto PossessedTank = Cast<ATank>(InPawn);
+	if (!ensure(PossessedTank)) return;
+
+	PossessedTank->OnDeath.AddUniqueDynamic(this, &ATankAIController::OnPossedTankDeath);
+}
 
 void ATankAIController::Tick(float DeltaTime)
 {
@@ -22,4 +34,9 @@ void ATankAIController::Tick(float DeltaTime)
 			AimingComponentRef->Firing();
 	}
 
+}
+
+void ATankAIController::OnPossedTankDeath()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Death"));
 }
