@@ -33,10 +33,11 @@ void ATankAIController::Tick(float DeltaTime)
 		if(AimingComponentRef->GetFiringState() == EFiringStatus::Locked)
 			AimingComponentRef->Firing();
 	}
-
 }
 
 void ATankAIController::OnPossedTankDeath()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Death"));
+	if (!ensure(GetPawn())) return;
+
+	GetPawn()->DetachFromControllerPendingDestroy();
 }

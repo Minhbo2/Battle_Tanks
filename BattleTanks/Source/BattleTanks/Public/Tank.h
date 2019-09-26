@@ -31,5 +31,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Setup)
 	int32 StartingHealth = 5;
 
-	int32 CurrentHealth = StartingHealth;
+	int32 CurrentHealth;
+
+	virtual void BeginPlay() override;
 };

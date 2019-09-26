@@ -4,6 +4,7 @@
 #include "TankPlayerController.h"
 #include "Engine/World.h"
 #include "TankAimingComponent.h"
+#include "Tank.h"
 
 
 void ATankPlayerController::BeginPlay()
@@ -70,7 +71,7 @@ bool ATankPlayerController::GetLookVectorHitLocation(FVector LookDirection, FVec
 		HitResult,
 		StartLocation,
 		EndLocation,
-		ECollisionChannel::ECC_Visibility
+		ECollisionChannel::ECC_Camera
 		))
 	{
 		HitLocation = HitResult.Location;
@@ -79,4 +80,19 @@ bool ATankPlayerController::GetLookVectorHitLocation(FVector LookDirection, FVec
 
 	HitLocation = FVector(0);
 	return false;
+}
+
+void ATankPlayerController::OnPossedTankDeath()
+{
+	StartSpectatingOnly();
+}
+
+void ATankPlayerController::SetPawn(APawn* InPawn)
+{
+	Super::SetPawn(InPawn);
+
+	ATank * ControlledTank = Cast<ATank>(InPawn);
+	if (!ensure(ControlledTank)) return;
+
+	ControlledTank->OnDeath.AddUniqueDynamic(this, &ATankPlayerController::OnPossedTankDeath);
 }
