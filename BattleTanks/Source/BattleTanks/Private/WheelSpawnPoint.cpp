@@ -29,19 +29,9 @@ void UWheelSpawnPoint::BeginPlay()
 	// SpawnActorDeferred prevent Construction script and BeginPlay from running
 	// SpawnClass, i.e SprungWheel trying to get its parent before the attachment process begins
 	// therefore, it will return null. This justify the use of SpawnActorDeffered.
-	auto NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnClass, GetComponentTransform());
-	if (!NewActor) return;
+	SpawnedActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnClass, GetComponentTransform());
+	if (!SpawnedActor) return;
 	// using KeepWorldTransform since the SpawnActor is spawned in the desired location already
-	NewActor->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
-	UGameplayStatics::FinishSpawningActor(NewActor, GetComponentTransform());
+	SpawnedActor->AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+	UGameplayStatics::FinishSpawningActor(SpawnedActor, GetComponentTransform());
 }
-
-
-// Called every frame
-void UWheelSpawnPoint::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-

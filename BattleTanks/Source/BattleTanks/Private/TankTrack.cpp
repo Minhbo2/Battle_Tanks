@@ -4,6 +4,8 @@
 #include "TankTrack.h"
 #include "UObject/ConstructorHelpers.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "SprungWheel.h"
+#include "WheelSpawnPoint.h"
 
 UTankTrack::UTankTrack()
 {
@@ -23,38 +25,47 @@ UTankTrack::UTankTrack()
 	SetNotifyRigidBodyCollision(true);
 }
 
-void UTankTrack::BeginPlay()
-{
-	Super::BeginPlay();
 
-	OnComponentHit.AddDynamic(this, &UTankTrack::OnHit);
+// TODO: Refactor to have this run once
+TArray<ASprungWheel*> UTankTrack::GetWheels() const
+{
+	TArray<ASprungWheel*> ResultArray;
+	TArray<USceneComponent*> Children;
+	GetChildrenComponents(true, Children);
+	for (USceneComponent* Child : Children)
+	{
+		auto SpawnPointChild = Cast<UWheelSpawnPoint>(Child);
+		if (!SpawnPointChild) continue;
+
+		AActor * SpawnedChild = SpawnPointChild->GetSpawnedActor();
+		auto SprungWheel = Cast<ASprungWheel>(SpawnedChild);
+		if (!SprungWheel) continue;
+
+		ResultArray.Add(SprungWheel);
+	}
+	return ResultArray;
 }
 
 void UTankTrack::SetThrottle(float Throttle)
 {
 	// incase player has access to throttle value
-	Throttle = FMath::Clamp<float>(Throttle, -1, 1);
-	DriveTrack(Throttle);
+	float CurrentThrottle = FMath::Clamp<float>(Throttle, -1, 1);
+	DriveTrack(CurrentThrottle);
 }
 
-void UTankTrack::DriveTrack(float Throttle)
+void UTankTrack::DriveTrack(float CurrentThrottle)
 {
-	/**
-	Calculate force and locations to apply the force to.
-	*/
-	auto ForceApplied = GetForwardVector() * Throttle * TrackMaxForce;
-	auto ForceLocation = GetComponentLocation();
-	// Cast To primitive component since scene component does not have AddForceAtLocation method
-	auto TankRoot = Cast<UPrimitiveComponent>(GetOwner()->GetRootComponent());
-	TankRoot->AddForceAtLocation(ForceApplied, ForceLocation);
+	auto ForceApplied = CurrentThrottle * TrackMaxForce;
+	auto Wheels = GetWheels();
+	auto ForcePerWheel = ForceApplied / Wheels.Num();
+
+	for (ASprungWheel* Wheel : Wheels)
+	{
+		Wheel->AddDrivingForce(ForcePerWheel);
+	}
 }
 
-void UTankTrack::OnHit(UPrimitiveComponent * HitComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
-{
-	ApplySidewaysForce();
-	CurrentThrottle = 0;
-}
-
+// LEGACY; using WheelConstraint instead.
 void UTankTrack::ApplySidewaysForce()
 {
 	// calculate sideway/slippage speed of the track

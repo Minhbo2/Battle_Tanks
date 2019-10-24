@@ -32,14 +32,9 @@ public:
 
 private:
 
-	float CurrentThrottle;
+	TArray<class ASprungWheel*> GetWheels() const;
 
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
-
-	void DriveTrack(float Throttle);
+	void DriveTrack(float CurrentThrottle);
 
 	void ApplySidewaysForce();
 };
