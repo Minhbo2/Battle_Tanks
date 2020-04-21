@@ -20,17 +20,23 @@ void ATankAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	auto PlayerTank     = GetWorld()->GetFirstPlayerController()->GetPawn();
+	SearchAndDestroy();
+}
+
+void ATankAIController::SearchAndDestroy()
+{
+	// TODO: can store both into global vars instead of local/run every frame
+	auto PlayerTank = GetWorld()->GetFirstPlayerController()->GetPawn();
 	auto ControlledTank = GetPawn();
 
-	if (ensure(ControlledTank && PlayerTank)) 
+	if (ensure(ControlledTank && PlayerTank))
 	{
 		auto AimingComponentRef = GetPawn()->FindComponentByClass<UTankAimingComponent>();
-		FVector PlayerLocation  = PlayerTank->GetActorLocation();
+		FVector PlayerLocation = PlayerTank->GetActorLocation();
 		AimingComponentRef->AimAt(PlayerLocation);
 		MoveToActor(PlayerTank, AcceptanceRadius);
 
-		if(AimingComponentRef->GetFiringState() == EFiringStatus::Locked)
+		if (AimingComponentRef->GetFiringState() == EFiringStatus::Locked)
 			AimingComponentRef->Firing();
 	}
 }

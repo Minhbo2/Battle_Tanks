@@ -6,6 +6,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "TankTrack.generated.h"
 
+class ASprungWheel;
+
 /**
  * 
  */
@@ -32,7 +34,9 @@ public:
 
 private:
 
-	TArray<class ASprungWheel*> GetWheels() const;
+	TArray<ASprungWheel*> Wheels;
+
+	TArray<ASprungWheel*> GetWheels() const;
 
 	void DriveTrack(float CurrentThrottle);
 

@@ -25,26 +25,24 @@ UTankTrack::UTankTrack()
 	SetNotifyRigidBodyCollision(true);
 }
 
-
-// TODO: Refactor to have this run once
 TArray<ASprungWheel*> UTankTrack::GetWheels() const
 {
-	TArray<ASprungWheel*> ResultArray;
 	TArray<USceneComponent*> Children;
+	TArray<ASprungWheel*> ResultArray;
 	GetChildrenComponents(true, Children);
 	for (USceneComponent* Child : Children)
 	{
 		auto SpawnPointChild = Cast<UWheelSpawnPoint>(Child);
 		if (!SpawnPointChild) continue;
 
-		AActor * SpawnedChild = SpawnPointChild->GetSpawnedActor();
-		auto SprungWheel = Cast<ASprungWheel>(SpawnedChild);
+		ASprungWheel* SprungWheel = Cast<ASprungWheel>(SpawnPointChild->GetSpawnedActor());
 		if (!SprungWheel) continue;
 
 		ResultArray.Add(SprungWheel);
 	}
 	return ResultArray;
 }
+
 
 void UTankTrack::SetThrottle(float Throttle)
 {
@@ -55,8 +53,10 @@ void UTankTrack::SetThrottle(float Throttle)
 
 void UTankTrack::DriveTrack(float CurrentThrottle)
 {
+	if (Wheels.Num() <= 0)
+		Wheels = GetWheels();
+
 	auto ForceApplied = CurrentThrottle * TrackMaxForce;
-	auto Wheels = GetWheels();
 	auto ForcePerWheel = ForceApplied / Wheels.Num();
 
 	for (ASprungWheel* Wheel : Wheels)
@@ -65,7 +65,8 @@ void UTankTrack::DriveTrack(float CurrentThrottle)
 	}
 }
 
-// LEGACY; using WheelConstraint instead.
+
+// LEGACY; using WheelConstraintComp instead.
 void UTankTrack::ApplySidewaysForce()
 {
 	// calculate sideway/slippage speed of the track

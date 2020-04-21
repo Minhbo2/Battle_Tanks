@@ -21,6 +21,8 @@ protected:
 private:
 
 	void Tick(float DeltaTime) override;
+
+	void SearchAndDestroy();
 	
 	virtual void SetPawn(APawn* InPawn) override;
 
